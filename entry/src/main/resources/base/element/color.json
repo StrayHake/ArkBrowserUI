@@ -1,0 +1,65 @@
+{
+  "color": [
+    { "name": "start_window_background", "value": "#FFFFFF" },
+
+    { "name": "app_background", "value": "#FFFFFF" },
+
+    { "name": "app_text_title", "value": "#333333" },
+    { "name": "app_text_primary", "value": "#222222" },
+    { "name": "app_text_secondary", "value": "#666666" },
+    { "name": "app_text_tertiary", "value": "#999999" },
+
+    { "name": "app_border_light", "value": "#C0C0C0" },
+    { "name": "divider_light", "value": "#E8E8E8" },
+
+    { "name": "toolbar_bg", "value": "#F3F4F5" },
+
+    { "name": "app_tab_active_bg", "value": "#E0F3FF" },
+    { "name": "app_tab_inactive_bg", "value": "#EBEBEB" },
+    { "name": "app_tab_active_hover_bg", "value": "#CCE8FF" },
+    { "name": "app_tab_inactive_hover_bg", "value": "#DCDCDC" },
+    { "name": "tab_pressed_bg", "value": "#C0C0C0" },
+    { "name": "tab_active_text", "value": "#1890FF" },
+    { "name": "tab_inactive_text", "value": "#444444" },
+    { "name": "tab_close_button", "value": "#888888" },
+
+    { "name": "app_add_button_bg", "value": "#D0D0D0" },
+    { "name": "add_button_text", "value": "#555555" },
+
+    { "name": "button_hover_bg", "value": "#E8E8E8" },
+    { "name": "close_button_hover_bg", "value": "#FF4D4F" },
+    { "name": "close_button_hover_text", "value": "#FFFFFF" },
+    { "name": "button_pressed_bg", "value": "#D0D0D0" },
+    { "name": "close_button_pressed_bg", "value": "#D73A3A" },
+
+    { "name": "app_content_bg", "value": "#F7F8FA" },
+
+    { "name": "menu_bg", "value": "#FFFFFF" },
+    { "name": "menu_text", "value": "#333333" },
+    { "name": "menu_arrow", "value": "#666666" },
+    { "name": "menu_expanded_bg", "value": "#F0F0F0" },
+    { "name": "menu_children_bg", "value": "#FAFAFA" },
+
+    { "name": "context_menu_bg", "value": "#FFFFFF" },
+    { "name": "context_menu_text", "value": "#333333" },
+    { "name": "context_menu_pressed_bg", "value": "#F0F0F0" },
+
+    { "name": "dialog_bg", "value": "#FFFFFF" },
+    { "name": "dialog_title_text", "value": "#333333" },
+    { "name": "dialog_content_text", "value": "#666666" },
+    { "name": "dialog_button_text", "value": "#FFFFFF" },
+    { "name": "dialog_divider", "value": "#E8E8E8" },
+
+    { "name": "mask_light_10", "value": "#1A000000" },
+    { "name": "mask_light_30", "value": "#4D000000" },
+
+    { "name": "icon_success", "value": "#52C41A" },
+    { "name": "icon_error", "value": "#FF4D4F" },
+    { "name": "icon_warning", "value": "#FAAD14" },
+    { "name": "icon_info", "value": "#1890FF" },
+
+    { "name": "shadow_level1", "value": "#26000000" },
+    { "name": "shadow_level2", "value": "#33000000" },
+    { "name": "shadow_level3", "value": "#40000000" }
+  ]
+}
