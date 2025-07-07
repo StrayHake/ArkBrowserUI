@@ -440,11 +440,18 @@ struct Index {
             .height(18)
             .backgroundColor($r('app.color.app_border_light'))
         }
+        .shadow({
+          radius: 4,
+          color: $r('app.color.shadow_level1'),
+          offsetX: 0,
+          offsetY: 0
+        })
         .height(48)
         .alignItems(VerticalAlign.Center)
         .padding({ left: 12, right: 140 })
         .width('100%')
         .backgroundColor($r('app.color.toolbar_bg'))
+        .zIndex(100)  // 提高层级确保阴影显示
 
         /* ── 内容区 ── */
         Tabs({ index: this.current }) {
