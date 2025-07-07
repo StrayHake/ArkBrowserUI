@@ -28,9 +28,16 @@ export struct MenuComponent {
   @State menuOpacity: number = 0
   @State menuHeight: number = 0
 
+  // 统一的尺寸常量，便于高度计算
+  private static readonly MENU_ITEM_HEIGHT: number = 32
+  private static readonly MENU_CONTAINER_PADDING: number = 4
+  private static readonly SUBMENU_VERTICAL_PADDING: number = 2
+  private static readonly MENU_ITEM_HORIZONTAL_PADDING: number = 8
+  private static readonly MENU_ITEM_INDENT_STEP: number = 16
+
   aboutToAppear() {
-    // 计算菜单的初始高度（只包含顶层菜单项）
-    const initialHeight: number = this.calculateInitialMenuHeight()
+    // 计算菜单的初始高度
+    const initialHeight: number = this.calculateTotalMenuHeight()
 
     // 启动遮罩层和菜单渐入动画
     setTimeout(() => {
@@ -62,7 +69,7 @@ export struct MenuComponent {
         .width('100%')
         .height('100%')
         .backgroundColor($r('app.color.mask_light_10'))
-        .opacity(this.maskOpacity) // 通过透明度控制渐入渐出
+        .opacity(this.maskOpacity)
         .onClick(() => { this.handleBackgroundClick() })
         .animation({
           duration: AnimationDuration,
@@ -71,9 +78,13 @@ export struct MenuComponent {
 
       /* 菜单内容 - 添加高度、缩放和透明度动画 */
       Column() {
-        ForEach(this.menuData, (item: MenuItem, index: number) => {
-          this.buildMenuItem(item, index.toString(), 0)
-        })
+        // 菜单内容区域，不再使用ForEach直接渲染，而是包装在一个Column中
+        Column() {
+          ForEach(this.menuData, (item: MenuItem, index: number) => {
+            this.buildMenuItem(item, index.toString(), 0)
+          })
+        }
+        .width('100%')
       }
       .width(200)
       .backgroundColor($r('app.color.menu_bg'))
@@ -84,10 +95,10 @@ export struct MenuComponent {
         offsetX: 0,
         offsetY: 4
       })
-      .padding(4)
+      .padding(MenuComponent.MENU_CONTAINER_PADDING)
       .position({ x: 12, y: 48 })
       .clip(true)
-      .height(this.menuHeight) // 动态高度
+      .height(this.menuHeight)
       .scale({ x: this.menuScale, y: this.menuScale })
       .opacity(this.menuOpacity)
       .animation({
@@ -129,8 +140,11 @@ export struct MenuComponent {
         }
       }
       .width('100%')
-      .height(32)
-      .padding({ left: 8 + level * 16, right: 8 })
+      .height(MenuComponent.MENU_ITEM_HEIGHT)
+      .padding({
+        left: MenuComponent.MENU_ITEM_HORIZONTAL_PADDING + level * MenuComponent.MENU_ITEM_INDENT_STEP,
+        right: MenuComponent.MENU_ITEM_HORIZONTAL_PADDING
+      })
       .backgroundColor(this.expandedPaths.has(path) ? $r('app.color.menu_expanded_bg') : Color.Transparent)
       .borderRadius(4)
       .alignItems(VerticalAlign.Center)
@@ -145,52 +159,70 @@ export struct MenuComponent {
       // 子菜单容器
       if (item.children && item.children.length > 0) {
         Column() {
-          ForEach(item.children, (child: MenuItem, childIndex: number) => {
-            this.buildMenuItem(child, path + '-' + childIndex.toString(), level + 1)
-          })
+          Column() {
+            ForEach(item.children, (child: MenuItem, childIndex: number) => {
+              this.buildMenuItem(child, `${path}-${childIndex}`, level + 1)
+            })
+          }
+          .width('100%')
         }
         .width('100%')
         .backgroundColor($r('app.color.menu_children_bg'))
         .borderRadius(4)
-        .padding({ top: 2, bottom: 2 })
+        .padding({
+          top: this.expandedPaths.has(path) ? MenuComponent.SUBMENU_VERTICAL_PADDING : 0,
+          bottom: this.expandedPaths.has(path) ? MenuComponent.SUBMENU_VERTICAL_PADDING : 0
+        })
         .clip(true)
-        .height(this.expandedPaths.has(path) ?
-        this.calculateMenuHeight(item.children, path) : 0)
+        .height(this.expandedPaths.has(path) ? this.calculateSubMenuHeight(item.children, path) : 0)
         .animation({
           duration: AnimationDuration,
           curve: Curve.EaseInOut
         })
       }
     }
-    .margin({ bottom: level === 0 ? 1 : 0 })
+    .width('100%')
   }
 
-  // 计算菜单的初始高度（只包含顶层菜单项）
-  private calculateInitialMenuHeight(): number {
-    const itemHeight: number = 32
-    const padding: number = 8 // 上下各4px
-    const marginBottom: number = this.menuData.length > 1 ? (this.menuData.length - 1) * 1 : 0
-    const totalHeight: number = this.menuData.length * itemHeight + padding + marginBottom
+  // 计算整个菜单的总高度（包含展开的子菜单）
+  private calculateTotalMenuHeight(): number {
+    // 容器的上下padding
+    let totalHeight: number = MenuComponent.MENU_CONTAINER_PADDING * 2
+
+    // 递归计算所有菜单项的高度
+    totalHeight += this.calculateMenuItemsHeight(this.menuData, '')
+
     return totalHeight
   }
 
-  private calculateMenuHeight(children: MenuItem[], parentPath: string): number {
+  // 递归计算菜单项高度
+  private calculateMenuItemsHeight(items: MenuItem[], parentPath: string): number {
     let height: number = 0
 
-    for (let i = 0; i < children.length; i++) {
-      height += 32
+    for (let i = 0; i < items.length; i++) {
+      const item: MenuItem = items[i]
+      const currentPath: string = parentPath === '' ? i.toString() : `${parentPath}-${i}`
 
-      const childPath: string = parentPath + '-' + i.toString()
-      const child: MenuItem = children[i]
+      // 添加当前菜单项的高度
+      height += MenuComponent.MENU_ITEM_HEIGHT
 
-      if (child.children &&
-        child.children.length > 0 &&
-      this.expandedPaths.has(childPath)) {
-        height += this.calculateMenuHeight(child.children, childPath)
+      // 如果有子菜单且已展开，递归计算子菜单高度
+      if (item.children && item.children.length > 0 && this.expandedPaths.has(currentPath)) {
+        height += this.calculateSubMenuHeight(item.children, currentPath)
       }
     }
 
-    height += 4
+    return height
+  }
+
+  // 计算子菜单的高度（包含padding）
+  private calculateSubMenuHeight(children: MenuItem[], parentPath: string): number {
+    // 子菜单容器的上下padding
+    let height: number = MenuComponent.SUBMENU_VERTICAL_PADDING * 2
+
+    // 递归计算子菜单项的高度
+    height += this.calculateMenuItemsHeight(children, parentPath)
+
     return height
   }
 
@@ -204,43 +236,23 @@ export struct MenuComponent {
       this.expandedPaths.add(path)
     }
 
-    // 当子菜单展开/收起时，需要重新计算并更新整个菜单的高度
-    setTimeout(() => {
-      this.updateMenuHeight()
-    }, 10)
-  }
-
-  // 更新菜单总高度
-  private updateMenuHeight() {
-    let totalHeight: number = this.calculateInitialMenuHeight()
-
-    // 只遍历顶层菜单项，calculateMenuHeight会自动递归处理所有展开的子菜单
-    for (let i = 0; i < this.menuData.length; i++) {
-      const topLevelPath: string = i.toString()
-      if (this.expandedPaths.has(topLevelPath)) {
-        const menuItem: MenuItem = this.menuData[i]
-        if (menuItem.children && menuItem.children.length > 0) {
-          totalHeight += this.calculateMenuHeight(menuItem.children, topLevelPath)
-        }
-      }
-    }
-
-    this.menuHeight = totalHeight
+    // 当子菜单展开/收起时，重新计算整个菜单的高度
+    this.menuHeight = this.calculateTotalMenuHeight()
   }
 
   private collapseMenuAndChildren(path: string) {
     const pathsToDelete: string[] = []
-    const targetPrefix: string = path + '-'
+    const targetPrefix: string = `${path}-`
 
     this.expandedPaths.forEach((expandedPath: string) => {
-      if (expandedPath === path || expandedPath.indexOf(targetPrefix) === 0) {
+      if (expandedPath === path || expandedPath.startsWith(targetPrefix)) {
         pathsToDelete.push(expandedPath)
       }
     })
 
-    for (let i = 0; i < pathsToDelete.length; i++) {
-      this.expandedPaths.delete(pathsToDelete[i])
-    }
+    pathsToDelete.forEach((pathToDelete: string) => {
+      this.expandedPaths.delete(pathToDelete)
+    })
   }
 
   private closeSiblingMenus(currentPath: string) {
@@ -255,17 +267,19 @@ export struct MenuComponent {
       if (expandedLevel === currentLevel &&
         expandedParent === currentParent &&
         expandedPath !== currentPath) {
+        // 收集需要关闭的路径及其所有子路径
         pathsToDelete.push(expandedPath)
 
-        const childPrefix: string = expandedPath + '-'
+        const childPrefix: string = `${expandedPath}-`
         this.expandedPaths.forEach((subPath: string) => {
-          if (subPath.indexOf(childPrefix) === 0) {
+          if (subPath.startsWith(childPrefix)) {
             pathsToDelete.push(subPath)
           }
         })
       }
     })
 
+    // 去重并删除
     const uniquePaths: Set<string> = new Set(pathsToDelete)
     uniquePaths.forEach((pathToDelete: string) => {
       this.expandedPaths.delete(pathToDelete)
@@ -273,21 +287,12 @@ export struct MenuComponent {
   }
 
   private getPathLevel(path: string): number {
-    let level: number = 0
-    for (let i = 0; i < path.length; i++) {
-      if (path.charAt(i) === '-') {
-        level++
-      }
-    }
-    return level
+    return path.split('-').length - 1
   }
 
   private getParentPath(path: string): string {
     const lastDashIndex: number = path.lastIndexOf('-')
-    if (lastDashIndex === -1) {
-      return ''
-    }
-    return path.substring(0, lastDashIndex)
+    return lastDashIndex === -1 ? '' : path.substring(0, lastDashIndex)
   }
 }
 
